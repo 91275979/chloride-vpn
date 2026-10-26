@@ -1,9 +1,5 @@
-blank_issues_enabled: false
-
+blank_issues_enabled: true
 contact_links:
-  - name: Discussions / 讨论区
-    url: https://github.com/2dust/v2rayN/discussions
-    about: 使用问题或需要帮助请前往 Discussions。
-  - name: Wiki / 使用说明
-    url: https://github.com/2dust/v2rayN/wiki
-    about: 查看常见问题和使用文档。
+  - name: 使用说明与已知限制
+    url: https://github.com/91275979/chloride-vpn/blob/main/docs/KNOWN-ISSUES.md
+    about: 请先查看 Alpha 限制；不要提交节点、订阅、密钥或未脱敏日志。

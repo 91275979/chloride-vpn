@@ -222,7 +222,8 @@ public class ClashUIItem
 [Serializable]
 public class SystemProxyItem
 {
-    public ESysProxyType SysProxyType { get; set; }
+    // A fresh personal profile must leave the user's current network untouched.
+    public ESysProxyType SysProxyType { get; set; } = ESysProxyType.Unchanged;
     public string SystemProxyExceptions { get; set; }
     public bool NotProxyLocalAddress { get; set; } = true;
     public string SystemProxyAdvancedProtocol { get; set; }

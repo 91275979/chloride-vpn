@@ -125,7 +125,10 @@ public sealed class AppManager
         {
             Logging.SaveLog("AppExitAsync Begin");
 
-            await SysProxyHandler.UpdateSysProxy(_config, true);
+            // An idle public client must not clear a proxy configured by some
+            // other application after Chloride was disconnected.
+            if (!Utils.IsWindows() || _config.PersonalConnectionEnabled != false)
+                await SysProxyHandler.UpdateSysProxy(_config, true);
             AppEvents.AppExitRequested.Publish();
             await Task.Delay(50); //Wait for AppExitRequested to be processed
 

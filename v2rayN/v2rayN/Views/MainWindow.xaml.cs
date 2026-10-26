@@ -18,6 +18,9 @@ public partial class MainWindow
         InitializeComponent();
 
         _config = AppManager.Instance.Config;
+        InitializePersonalDiagnostics();
+        LoadPersonalAppRouting();
+        StartPersonalStatusUpdates();
         ThreadPool.RegisterWaitForSingleObject(App.ProgramStarted, OnProgramStarted, null, -1, false);
 
         App.Current.SessionEnding += Current_SessionEnding;
@@ -34,6 +37,18 @@ public partial class MainWindow
 
         this.WhenActivated(disposables =>
         {
+            AppEvents.DispatcherStatisticsRequested.AsObservable()
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(UpdatePersonalLiveSpeed).DisposeWith(disposables);
+            // Personal home delegates imports and settings to upstream commands.
+            this.BindCommand(ViewModel, vm => vm.AddServerViaClipboardCmd, v => v.personalImport).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.SubSettingCmd, v => v.personalSubscription).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.AddServerViaImageCmd, v => v.personalImage).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.RoutingSettingCmd, v => v.personalRouting).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.DNSSettingCmd, v => v.personalDns).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.OptionSettingCmd, v => v.personalSettings).DisposeWith(disposables);
+            this.OneWayBind(ViewModel, vm => vm.StatusBarViewModel.RunningServerDisplay, v => v.personalNode.Text,
+                value => ServiceLib.Helper.PersonalConnectionPresentation.FriendlyNode(value)).DisposeWith(disposables);
             //servers
             this.BindCommand(ViewModel, vm => vm.AddVmessServerCmd, v => v.menuAddVmessServer).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddVlessServerCmd, v => v.menuAddVlessServer).DisposeWith(disposables);
@@ -143,8 +158,15 @@ public partial class MainWindow
              .DisposeWith(disposables);
         });
 
-        Title = $"{Utils.GetVersion()} - {(Utils.IsAdministrator() ? ResUI.RunAsAdmin : ResUI.NotRunAsAdmin)}";
-        if (_config.UiItem.AutoHideStartup)
+        Title = "氯离子 VPN";
+        // This application already has the required elevated token.
+        menuRebootAsAdmin.IsEnabled = false;
+        // An upstream app update would replace the customized shell. Core updates
+        // remain available; app upgrades are reviewed and rebuilt from source.
+        menuCheckUpdate.IsEnabled = false;
+        btnNewUpdate.IsEnabled = false;
+        menuCheckUpdate.ToolTip = "个人定制版请通过源码构建更新，避免被上游安装包覆盖。";
+        if (_config.UiItem.AutoHideStartup && !App.ShowOnStartup)
         {
             WindowState = WindowState.Minimized;
         }
@@ -159,6 +181,53 @@ public partial class MainWindow
     }
 
     #region Event
+
+    private void PersonalAdvanced_Click(object sender, RoutedEventArgs e)
+        => personalPages.SelectedIndex = 1;
+
+    private async void PersonalEnableProxy_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel == null) return;
+        if (_config.PersonalConnectionEnabled == false)
+        {
+            personalSettingsStatus.Text = "请先在概览开启连接，再调整兼容系统代理。";
+            return;
+        }
+        try
+        {
+            if (await ConfigHandler.GetDefaultServer(_config) == null)
+            {
+                MessageBox.Show(this, "请先导入并选择节点，再测试可用性。", "添加节点", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            if (ViewModel.StatusBarViewModel.EnableTun)
+            {
+                MessageBox.Show(this, "当前已启用 TUN，请先在高级面板确认网络模式。", "检查网络模式", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            if (MessageBox.Show(this, "将系统代理指向此客户端。请先记下原有代理设置；已设置代理不等于节点可用。是否继续？",
+                "启用系统代理", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                await ViewModel.Reload();
+                using var localProxy = new System.Net.Sockets.TcpClient();
+                await localProxy.ConnectAsync("127.0.0.1", AppManager.Instance.GetLocalPort(EInboundProtocol.socks));
+                ((ICommand)ViewModel.StatusBarViewModel.SystemProxySetCmd).Execute(null);
+            }
+        }
+        catch
+        {
+            // Do not expose node credentials in a new UI error path.
+            MessageBox.Show(this, "无法读取节点状态，请检查高级面板。", "操作未完成", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void PersonalClearProxy_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel == null) return;
+        if (MessageBox.Show(this, "将清除 Windows 系统代理，不会停止 TUN 或其他 VPN。若此前使用自定义代理，请按记录恢复。是否继续？",
+            "关闭系统代理", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            ((ICommand)ViewModel.StatusBarViewModel.SystemProxyClearCmd).Execute(null);
+    }
 
     private void OnProgramStarted(object state, bool timeout)
     {
@@ -319,7 +388,7 @@ public partial class MainWindow
     protected override void OnLoaded(object? sender, RoutedEventArgs e)
     {
         base.OnLoaded(sender, e);
-        if (_config.UiItem.AutoHideStartup)
+        if (_config.UiItem.AutoHideStartup && !App.ShowOnStartup)
         {
             ShowHideWindow(false);
         }

@@ -64,6 +64,11 @@ public class CoreManager
     /// <param name="preContext">Optional pre-socks context passed to <see cref="CoreStartPreService"/>.</param>
     public async Task LoadCore(CoreConfigContext? mainContext, CoreConfigContext? preContext)
     {
+        if (Utils.IsWindows() && _config.PersonalConnectionEnabled == false)
+        {
+            await CoreStop();
+            return;
+        }
         if (mainContext == null)
         {
             await UpdateFunc(false, ResUI.CheckServerSettings);
@@ -91,6 +96,7 @@ public class CoreManager
             await WindowsUtils.RemoveTunDevice();
         }
 
+        if (Utils.IsWindows() && _config.PersonalConnectionEnabled == false) return;
         await CoreStart(mainContext);
         await WaitForProxyPort(preContext);
         await CoreStartPreService(preContext);

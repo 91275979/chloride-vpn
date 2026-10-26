@@ -2681,9 +2681,19 @@ public static class ConfigHandler
         };
         await AddBatchRoutingRules(item1, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "global"));
 
+        // Personal preset is added only when initializing built-in rules. Existing
+        // user routing profiles return above and are never silently replaced.
+        var personalItem = new RoutingItem()
+        {
+            Remarks = "氯离子 VPN-国内直连与指定服务代理",
+            Url = string.Empty,
+            Sort = maxSort + 4,
+        };
+        await AddBatchRoutingRules(personalItem, EmbedUtils.GetEmbedText(Global.CustomRoutingFileName + "personal"));
+
         if (!blImportAdvancedRules)
         {
-            await SetDefaultRouting(config, item2);
+            await SetDefaultRouting(config, personalItem);
         }
         return 0;
     }

@@ -1,0 +1,37 @@
+[
+  {
+    "remarks": "局域网地址直连",
+    "outboundTag": "direct",
+    "ip": ["geoip:private"]
+  },
+  {
+    "remarks": "本地域名直连",
+    "outboundTag": "direct",
+    "domain": ["geosite:private"]
+  },
+  {
+    "remarks": "指定开发与国际服务代理",
+    "outboundTag": "proxy",
+    "domain": [
+      "domain:github.com", "domain:githubusercontent.com", "domain:githubassets.com",
+      "domain:docker.com", "domain:docker.io", "domain:openai.com", "domain:chatgpt.com",
+      "domain:google.com", "domain:googleapis.com", "domain:gstatic.com",
+      "domain:youtube.com", "domain:youtu.be", "domain:googlevideo.com", "domain:ytimg.com"
+    ]
+  },
+  {
+    "remarks": "国内域名直连",
+    "outboundTag": "direct",
+    "domain": ["geosite:cn"]
+  },
+  {
+    "remarks": "国内地址直连",
+    "outboundTag": "direct",
+    "ip": ["geoip:cn"]
+  },
+  {
+    "remarks": "未匹配流量默认直连",
+    "outboundTag": "direct",
+    "port": "0-65535"
+  }
+]

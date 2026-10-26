@@ -2,10 +2,16 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
+		<Product>氯离子 VPN</Product>
+		<Description>Personal desktop customization of v2rayN; upstream engine and protocol handling retained.</Description>
 		<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
 		<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
 		<UseWPF>true</UseWPF>
-		<ApplicationIcon>Resources\v2rayN.ico</ApplicationIcon>
+		<ApplicationIcon>Resources\ChlorideVPN.ico</ApplicationIcon>
+		<Version>0.1.0-alpha.1</Version>
+		<AssemblyVersion>0.1.0.0</AssemblyVersion>
+		<FileVersion>0.1.0.0</FileVersion>
+		<InformationalVersion>0.1.0-alpha.1 (v2rayN 7.25.6)</InformationalVersion>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
 		<SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
@@ -33,6 +39,7 @@
 		<Resource Include="Resources\NotifyIcon3.ico" />
 		<Resource Include="Resources\NotifyIcon4.ico" />
 		<Resource Include="Resources\v2rayN.ico" />
+		<Resource Include="Resources\ChlorideVPN.ico" />
 	</ItemGroup>
 
 	<ItemGroup>

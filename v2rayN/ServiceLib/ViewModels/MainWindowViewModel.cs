@@ -685,6 +685,15 @@ public partial class MainWindowViewModel : MyReactiveObject
         {
             SetReloadEnabled(false);
 
+            // Opening the window, selecting a node or an automatic reload must
+            // never restart transport after the personal master switch is off.
+            if (Utils.IsWindows() && _config.PersonalConnectionEnabled == false)
+            {
+                await CoreManager.Instance.CoreStop();
+                ReloadResult(false);
+                return;
+            }
+
             RxSchedulers.MainThreadScheduler.Schedule(() =>
             {
                 if (TabMainSelectedIndex < 0)
@@ -753,6 +762,25 @@ public partial class MainWindowViewModel : MyReactiveObject
                 _hasNextReloadJob = false;
                 await Reload();
             }
+        }
+    }
+
+    public async Task DisconnectPersonalConnection()
+    {
+        _config.PersonalConnectionEnabled = false;
+        // Drain an in-flight reload before stopping both owned core processes.
+        await _reloadSemaphore.WaitAsync();
+        try
+        {
+            SetReloadEnabled(false);
+            await CoreManager.Instance.CoreStop();
+            if (Utils.IsWindows()) await WindowsUtils.RemoveTunDevice();
+            ReloadResult(false);
+        }
+        finally
+        {
+            SetReloadEnabled(true);
+            _reloadSemaphore.Release();
         }
     }
 

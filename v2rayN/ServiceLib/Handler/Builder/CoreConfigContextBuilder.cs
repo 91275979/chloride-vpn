@@ -180,6 +180,17 @@ public class CoreConfigContextBuilder
                 },
             };
         }
+        if (mainResult.Context.IsWindows
+            && PersonalAppRoutingPolicy.UsesTunFrontend(config))
+        {
+            // The TUN frontend already chose direct vs proxy. Do not reclassify
+            // its proxy traffic using website rules again in the backend core.
+            var backendRouting = PersonalAppRoutingPolicy.CreateBackendRouting(mainResult.Context.RoutingItem);
+            resolvedMainResult = resolvedMainResult with
+            {
+                Context = resolvedMainResult.Context with { RoutingItem = backendRouting },
+            };
+        }
         return new CoreConfigContextBuilderAllResult(resolvedMainResult, preResult);
     }
 

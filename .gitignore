@@ -4,6 +4,27 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # User-specific files
+/artifacts/
+/.tools/
+/config-local/
+/downloads/
+/backups/
+**/guiConfigs/
+**/guiLogs/
+**/binConfigs/
+**/guiTemps/
+.env
+.env.*
+*.key
+*.pem
+*.ppk
+*.pfx
+id_ed25519*
+id_rsa*
+*.db
+*.db-shm
+*.db-wal
+*.log
 *.rsuser
 *.suo
 *.user

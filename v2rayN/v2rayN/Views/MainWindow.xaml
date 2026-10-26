@@ -10,12 +10,12 @@
     xmlns:resx="clr-namespace:ServiceLib.Resx;assembly=ServiceLib"
     xmlns:view="clr-namespace:v2rayN.Views"
     xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
-    Title="v2rayN"
-    Width="1200"
-    Height="800"
-    MinWidth="800"
+    Title="氯离子 VPN"
+    Width="1160"
+    Height="780"
+    MinWidth="1000" MinHeight="680"
     x:TypeArguments="vms:MainWindowViewModel"
-    Icon="/Resources/v2rayN.ico"
+    Icon="/Resources/ChlorideVPN.ico"
     ResizeMode="CanResizeWithGrip"
     ShowInTaskbar="True"
     Style="{StaticResource WindowGlobal}"
@@ -25,7 +25,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Popupbox.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="PersonalShellResources.xaml" /></ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
         </ResourceDictionary>
     </Window.Resources>
@@ -36,8 +36,93 @@
         Identifier="RootDialog"
         SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}"
         Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
-        <Grid>
-            <DockPanel>
+        <Grid x:Name="personalShellGrid" Background="{StaticResource ShellCanvas}">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="168" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+            <Border Background="#EAF2F4" BorderBrush="{StaticResource ShellLine}" BorderThickness="0,0,1,0">
+                <Grid Margin="16,27,16,20">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <StackPanel Margin="10,0,0,32">
+                        <TextBlock Text="Cl⁻" Foreground="#147D77" FontSize="34" FontWeight="SemiBold" />
+                        <TextBlock Text="氯离子 VPN" Foreground="{StaticResource ShellInk}" FontSize="16" FontWeight="SemiBold" Margin="0,2,0,0" />
+                    </StackPanel>
+                    <ListBox x:Name="personalNavigation" Grid.Row="1" Style="{StaticResource ShellNav}" SelectedIndex="0" SelectionChanged="PersonalNavigation_SelectionChanged" AutomationProperties.Name="主导航">
+                        <ListBoxItem Tag="0"><StackPanel Orientation="Horizontal"><TextBlock Text="◉" FontSize="16" Width="27" /><TextBlock Text="概览" FontSize="14" /></StackPanel></ListBoxItem>
+                        <ListBoxItem Tag="2"><StackPanel Orientation="Horizontal"><TextBlock Text="⇄" FontSize="17" Width="27" /><TextBlock Text="应用分流" FontSize="14" /></StackPanel></ListBoxItem>
+                        <ListBoxItem Tag="3"><StackPanel Orientation="Horizontal"><TextBlock Text="⚙" FontSize="16" Width="27" /><TextBlock Text="设置" FontSize="14" /></StackPanel></ListBoxItem>
+                        <ListBoxItem Tag="1"><StackPanel Orientation="Horizontal"><TextBlock Text="⌘" FontSize="16" Width="27" /><TextBlock Text="高级工具" FontSize="14" /></StackPanel></ListBoxItem>
+                    </ListBox>
+                    <StackPanel Grid.Row="3" Margin="12,0,0,0"><TextBlock x:Name="personalSidebarStatus" Text="读取连接状态" Foreground="#3D6667" FontSize="12" /><TextBlock Text="个人网络客户端" Foreground="#7A8E98" FontSize="11" Margin="0,7,0,0" /></StackPanel>
+                </Grid>
+            </Border>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions><RowDefinition Height="84" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                <StackPanel Margin="32,24,26,0"><TextBlock x:Name="personalSectionTitle" Text="概览" Foreground="{StaticResource ShellInk}" FontSize="24" FontWeight="SemiBold" /><TextBlock x:Name="personalSectionDescription" Text="连接状态与常用分流，一眼看清。" Foreground="{StaticResource ShellMuted}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                <TabControl x:Name="personalPages" Grid.Row="1" SelectedIndex="0" BorderThickness="0" SelectionChanged="PersonalPages_SelectionChanged">
+                    <TabControl.Template><ControlTemplate TargetType="TabControl"><ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent" /></ControlTemplate></TabControl.Template>
+                    <TabItem Header="概览">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <Grid x:Name="personalOverviewGrid" Margin="32,12,32,24" TextElement.Foreground="{StaticResource ShellInk}">
+                                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="1.04*" /><ColumnDefinition Width="20" /><ColumnDefinition Width="1*" /></Grid.ColumnDefinitions>
+                                <Border Background="{StaticResource ShellOcean}" CornerRadius="20" Padding="26" MinHeight="376">
+                                    <Grid>
+                                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                        <DockPanel><TextBlock Text="当前节点" Foreground="#B8D1D7" FontSize="12" /><Border DockPanel.Dock="Right" HorizontalAlignment="Right" Background="#2A535E" CornerRadius="10" Padding="9,4"><TextBlock x:Name="personalProxyStatus" Text="读取中" Foreground="#D2EFE8" FontSize="11" /></Border></DockPanel>
+                                        <TextBlock x:Name="personalNode" Grid.Row="1" Text="尚未选择节点" Foreground="White" FontSize="32" FontWeight="SemiBold" Margin="0,24,0,7" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock x:Name="personalConnectionDescription" Grid.Row="2" Text="添加节点后，开启你的个人连接。" Foreground="#BED4DA" FontSize="13" TextWrapping="Wrap" LineHeight="21" />
+                                        <Button x:Name="personalConnectButton" Grid.Row="3" Click="PersonalConnect_Click" Width="160" Height="146" HorizontalAlignment="Center" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="开启或断开氯离子连接" AutomationProperties.Name="连接开关">
+                                            <Button.Template><ControlTemplate TargetType="Button"><ContentPresenter /><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Opacity" Value="0.85" /></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="Opacity" Value="0.65" /></Trigger><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5" /></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                                            <StackPanel HorizontalAlignment="Center"><Grid Width="112" Height="112"><Ellipse Stroke="#4B7780" StrokeThickness="1" /><Ellipse Margin="10" Stroke="#75BCAF" StrokeThickness="1" /><Border x:Name="personalPowerSurface" Margin="22" Background="#D9F3E8" CornerRadius="40"><Path Data="M 12,2 L 12,12 M 6,5 C 0,9 1,19 8,22 C 15,25 24,19 23,12 C 23,9 21,6 18,5" Stroke="#146B65" StrokeThickness="2.2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform" Width="26" Height="29" /></Border><Ellipse Width="6" Height="6" Fill="#A5E0C9" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-2,0" /></Grid><TextBlock x:Name="personalConnectLabel" Text="开启连接" Foreground="White" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,15,0,0" /></StackPanel>
+                                        </Button>
+                                        <Button Grid.Row="4" Content="管理节点" Click="PersonalAdvanced_Click" Style="{StaticResource ShellLink}" Foreground="#B7DBD9" HorizontalAlignment="Left" />
+                                    </Grid>
+                                </Border>
+                                <Grid Grid.Column="2">
+                                    <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="16" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                    <Border Background="White" CornerRadius="14" Padding="22" BorderBrush="{StaticResource ShellLine}" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="浏览器" FontSize="18" FontWeight="SemiBold" />
+                                            <DockPanel Margin="0,19,0,17"><Border Width="34" Height="34" Background="#E5F4F6" CornerRadius="10" DockPanel.Dock="Left" Margin="0,0,11,0"><TextBlock Text="e" FontFamily="Segoe UI" FontSize="25" FontWeight="SemiBold" Foreground="#177E91" HorizontalAlignment="Center" /></Border><StackPanel><TextBlock Text="Microsoft Edge" FontSize="14" FontWeight="SemiBold" /><TextBlock Text="单独切换，不影响其他应用" Foreground="{StaticResource ShellMuted}" FontSize="11" Margin="0,4,0,0" /></StackPanel></DockPanel>
+                                            <ListBox x:Name="personalEdgeMode" Style="{StaticResource ShellSegments}" SelectionChanged="PersonalEdgeMode_SelectionChanged" AutomationProperties.Name="Edge 连接方式"><ListBoxItem Content="直连" /><ListBoxItem Content="按网站" /><ListBoxItem Content="全部走节点" /></ListBox>
+                                            <TextBlock x:Name="personalEdgeDescription" Text="仅规则中的网站走节点，其他网站直连。" Foreground="{StaticResource ShellMuted}" FontSize="12" TextWrapping="Wrap" LineHeight="20" Margin="0,14,0,5" />
+                                            <TextBlock x:Name="personalEdgeStatus" Text="更改后自动保存" Foreground="{StaticResource ShellAccent}" FontSize="11" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource ShellLine}" BorderThickness="1" CornerRadius="14" Padding="22,18">
+                                        <StackPanel><DockPanel><Button Content="管理" Click="PersonalOpenApps_Click" Style="{StaticResource ShellLink}" DockPanel.Dock="Right" HorizontalAlignment="Right" Padding="0" /><TextBlock Text="走节点的应用" FontSize="15" FontWeight="SemiBold" /></DockPanel><TextBlock x:Name="personalOverviewApps" Text="尚未添加应用" FontSize="13" Margin="0,12,0,6" TextWrapping="Wrap" /><TextBlock Text="未列出的应用直接联网。" Foreground="{StaticResource ShellMuted}" FontSize="11" /></StackPanel>
+                                    </Border>
+                                </Grid>
+                                <Border Grid.Row="1" Grid.ColumnSpan="3" Background="White" BorderBrush="{StaticResource ShellLine}" BorderThickness="1" CornerRadius="12" Padding="20,16" Margin="0,18,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,14,0">
+                                            <TextBlock Text="实时节点流量" FontSize="12" Foreground="{StaticResource ShellMuted}" />
+                                            <TextBlock x:Name="personalLiveSpeed" Text="等待流量统计" FontSize="16" FontWeight="SemiBold" Margin="0,9,0,5" />
+                                            <TextBlock x:Name="personalLatency" Text="尚未检测延迟" FontSize="11" Foreground="{StaticResource ShellMuted}" TextWrapping="Wrap" />
+                                            <Button x:Name="personalTestButton" Content="检测延迟" Click="PersonalTest_Click" Style="{StaticResource ShellLink}" HorizontalAlignment="Left" Margin="0,7,0,0" />
+                                        </StackPanel>
+                                        <Border Grid.Column="1" BorderBrush="{StaticResource ShellLine}" BorderThickness="1,0,1,0" Padding="18,0">
+                                            <StackPanel>
+                                                <TextBlock Text="节点下载实测" FontSize="12" Foreground="{StaticResource ShellMuted}" />
+                                                <TextBlock x:Name="personalDownloadSpeed" Text="尚未测速" FontSize="18" FontWeight="SemiBold" Margin="0,7,0,5" />
+                                                <TextBlock x:Name="personalDownloadNote" Text="手动检测，最多约 20 MB" FontSize="11" Foreground="{StaticResource ShellMuted}" TextWrapping="Wrap" />
+                                                <Button x:Name="personalSpeedButton" Content="测速" Click="PersonalMeasureSpeed_Click" Style="{StaticResource ShellLink}" HorizontalAlignment="Left" Margin="0,7,0,0" />
+                                            </StackPanel>
+                                        </Border>
+                                        <StackPanel Grid.Column="2" Margin="18,0,0,0">
+                                            <TextBlock Text="IP 质量 · 纯净度参考" FontSize="12" Foreground="{StaticResource ShellMuted}" />
+                                            <TextBlock x:Name="personalIpQuality" Text="尚未检测" FontSize="18" FontWeight="SemiBold" Margin="0,7,0,5" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock x:Name="personalIpQualityNote" Text="查看机房、代理标记和风险" FontSize="11" Foreground="{StaticResource ShellMuted}" TextWrapping="Wrap" />
+                                            <StackPanel Orientation="Horizontal" Margin="0,7,0,0"><Button x:Name="personalQualityButton" Content="检测 IP" Click="PersonalCheckQuality_Click" Style="{StaticResource ShellLink}" /><Button x:Name="personalQualityDetails" Content="详情" Click="PersonalQualityDetails_Click" Style="{StaticResource ShellLink}" Margin="16,0,0,0" Visibility="Collapsed" /></StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </ScrollViewer>
+                    </TabItem>
+
+                <TabItem Header="高级面板">
+            <DockPanel Background="{DynamicResource MaterialDesignPaper}">
                 <ToolBarTray DockPanel.Dock="Top">
                     <ToolBar
                         HorizontalAlignment="Center"
@@ -456,6 +541,38 @@
                     <materialDesign:Snackbar x:Name="MainSnackbar" MessageQueue="{materialDesign:MessageQueue}" />
                 </Grid>
             </DockPanel>
+                </TabItem>
+                    <TabItem Header="应用分流">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel x:Name="personalAppsPage" Margin="32,12,32,28" TextElement.Foreground="{StaticResource ShellInk}">
+                            <Border Background="White" BorderBrush="{StaticResource ShellLine}" BorderThickness="1" CornerRadius="14" Padding="24"><DockPanel><ToggleButton x:Name="personalAppSplit" DockPanel.Dock="Right" Style="{StaticResource ShellToggle}" Click="PersonalAppSplit_Click" AutomationProperties.Name="仅指定应用走节点" /><StackPanel><TextBlock Text="仅指定应用走节点" FontSize="18" FontWeight="SemiBold" /><TextBlock Text="开启后，名单外应用和局域网保持直连。" Foreground="{StaticResource ShellMuted}" FontSize="12" Margin="0,8,12,0" TextWrapping="Wrap" /></StackPanel></DockPanel></Border>
+                            <DockPanel Margin="0,26,0,12"><Button Content="添加应用" Click="PersonalAddApp_Click" Style="{StaticResource ShellPrimaryButton}" DockPanel.Dock="Right" /><StackPanel VerticalAlignment="Center"><TextBlock Text="应用名单" FontSize="17" FontWeight="SemiBold" /><TextBlock Text="选择应用文件，即可加入名单。" Foreground="{StaticResource ShellMuted}" FontSize="12" Margin="0,5,0,0" /></StackPanel></DockPanel>
+                            <Border Background="White" BorderBrush="{StaticResource ShellLine}" BorderThickness="1" CornerRadius="12" Padding="18,4">
+                                <StackPanel><ItemsControl x:Name="personalAppList"><ItemsControl.ItemTemplate><DataTemplate><Border BorderBrush="#E8EFF1" BorderThickness="0,0,0,1" Padding="0,14"><DockPanel><Button Content="移出" Tag="{Binding ProcessName}" Click="PersonalRemoveApp_Click" Style="{StaticResource ShellLink}" DockPanel.Dock="Right" VerticalAlignment="Center" /><Border Width="38" Height="38" Background="#E8F3F2" CornerRadius="10" DockPanel.Dock="Left" Margin="0,0,13,0"><TextBlock Text="{Binding Initials}" Foreground="#187A72" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><StackPanel VerticalAlignment="Center"><TextBlock Text="{Binding Title}" Foreground="#193442" FontSize="14" FontWeight="SemiBold" /><TextBlock Text="{Binding ProcessName}" Foreground="#71848E" FontSize="11" Margin="0,5,0,0" /></StackPanel></DockPanel></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><TextBlock x:Name="personalAppsEmpty" Text="还没有应用。点击“添加应用”选择需要走节点的软件。" Foreground="{StaticResource ShellMuted}" TextWrapping="Wrap" Margin="0,18" /></StackPanel>
+                            </Border>
+                            <TextBlock x:Name="personalAppRoutingStatus" Text="正在读取应用规则。" Foreground="{StaticResource ShellMuted}" FontSize="12" TextWrapping="Wrap" Margin="2,14,0,0" />
+                            <Border BorderBrush="{StaticResource ShellLine}" BorderThickness="0,1,0,0" Margin="0,24,0,0" Padding="0,20,0,0"><DockPanel><Button x:Name="personalRouting" Content="编辑网站规则" Style="{StaticResource ShellButton}" DockPanel.Dock="Right" /><StackPanel><TextBlock Text="Edge 的网站规则" FontSize="15" FontWeight="SemiBold" /><TextBlock Text="浏览器选“按网站”时使用。未匹配的网站默认直连。" Foreground="{StaticResource ShellMuted}" FontSize="12" TextWrapping="Wrap" Margin="0,7,16,0" /></StackPanel></DockPanel></Border>
+                            <Expander Header="按进程名编辑（高级）" Margin="0,22,0,0" Foreground="{StaticResource ShellMuted}"><StackPanel Margin="0,12,0,0"><TextBox x:Name="personalProxyApps" Style="{StaticResource ShellInput}" AcceptsReturn="True" Height="90" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="应用进程名名单" /><Button Content="保存名单" Click="PersonalSaveAppRouting_Click" Style="{StaticResource ShellButton}" HorizontalAlignment="Left" Margin="0,12,0,0" /></StackPanel></Expander>
+                        </StackPanel></ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="设置">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel x:Name="personalSettingsPage" Margin="32,12,32,28" TextElement.Foreground="{StaticResource ShellInk}">
+                            <TextBlock Text="启动与窗口" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,14" />
+                            <Border Background="White" CornerRadius="12" BorderBrush="{StaticResource ShellLine}" BorderThickness="1" Padding="22,6"><StackPanel>
+                                <DockPanel Margin="0,16"><ToggleButton x:Name="personalAutoRun" Style="{StaticResource ShellToggle}" Click="PersonalAutoRun_Click" DockPanel.Dock="Right" AutomationProperties.Name="开机自启动" /><StackPanel><TextBlock Text="开机自启动" FontSize="14" FontWeight="SemiBold" /><TextBlock Text="登录 Windows 后自动打开氯离子。" Foreground="{StaticResource ShellMuted}" FontSize="12" Margin="0,6,12,0" /></StackPanel></DockPanel>
+                                <Border BorderBrush="#E8EFF1" BorderThickness="0,1,0,0" /><DockPanel Margin="0,16"><ToggleButton x:Name="personalAutoHide" Style="{StaticResource ShellToggle}" Click="PersonalAutoHide_Click" DockPanel.Dock="Right" AutomationProperties.Name="启动时最小化" /><StackPanel><TextBlock Text="启动时最小化" FontSize="14" FontWeight="SemiBold" /><TextBlock Text="连接继续运行，窗口留在任务栏。" Foreground="{StaticResource ShellMuted}" FontSize="12" Margin="0,6,12,0" /></StackPanel></DockPanel>
+                            </StackPanel></Border>
+                            <TextBlock Text="节点管理" FontSize="18" FontWeight="SemiBold" Margin="0,25,0,8" /><TextBlock Text="分享链接只保存在本机。" Foreground="{StaticResource ShellMuted}" FontSize="12" Margin="0,0,0,14" />
+                            <WrapPanel><Button x:Name="personalImport" Content="导入节点" Style="{StaticResource ShellPrimaryButton}" Margin="0,0,10,10" /><Button x:Name="personalImage" Content="扫描二维码" Style="{StaticResource ShellButton}" Margin="0,0,10,10" /><Button x:Name="personalSubscription" Content="管理订阅" Style="{StaticResource ShellButton}" Margin="0,0,0,10" /></WrapPanel>
+                            <TextBlock Text="网络与高级选项" FontSize="18" FontWeight="SemiBold" Margin="0,18,0,13" />
+                            <WrapPanel><Button x:Name="personalDns" Content="DNS 设置" Style="{StaticResource ShellButton}" Margin="0,0,10,10" /><Button x:Name="personalSettings" Content="更多参数" Style="{StaticResource ShellButton}" Margin="0,0,10,10" /><Button Content="查看日志与节点" Click="PersonalAdvanced_Click" Style="{StaticResource ShellButton}" Margin="0,0,0,10" /></WrapPanel>
+                            <Expander Header="系统代理兼容模式" Foreground="{StaticResource ShellMuted}" Margin="0,12,0,0"><StackPanel Margin="0,10,0,0"><TextBlock Text="当前使用应用分流时，保持系统代理关闭即可。" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,12" /><WrapPanel><Button x:Name="personalEnableProxy" Content="开启系统代理" Click="PersonalEnableProxy_Click" Style="{StaticResource ShellButton}" Margin="0,0,10,0" /><Button x:Name="personalClearProxy" Content="关闭系统代理" Click="PersonalClearProxy_Click" Style="{StaticResource ShellButton}" /></WrapPanel></StackPanel></Expander>
+                            <TextBlock x:Name="personalSettingsStatus" Foreground="{StaticResource ShellAccent}" FontSize="12" TextWrapping="Wrap" Margin="0,14,0,0" />
+                            <TextBlock Text="氯离子 VPN · 基于 v2rayN 7.25.6 / GPL-3.0" Foreground="#82959E" FontSize="11" Margin="0,25,0,0" />
+                        </StackPanel></ScrollViewer>
+                    </TabItem>
+                </TabControl>
+            </Grid>
         </Grid>
+
     </materialDesign:DialogHost>
 </base:WindowBase>

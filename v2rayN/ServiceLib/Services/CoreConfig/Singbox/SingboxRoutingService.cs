@@ -224,16 +224,27 @@ public partial class CoreConfigSingboxService
                 }
             }
 
-            _coreConfig.route.rules.Add(new()
+            if (context.IsWindows && context.IsTunEnabled
+                && PersonalAppRoutingPolicy.UsesTunFrontend(_config))
             {
-                outbound = Global.DirectTag,
-                clash_mode = nameof(ERuleMode.Direct)
-            });
-            _coreConfig.route.rules.Add(new()
+                _coreConfig.route.rules.AddRange(
+                    PersonalAppRoutingPolicy.CreateFrontendRules(_config.PersonalAppRouting));
+            }
+
+            if (!(context.IsWindows && context.IsTunEnabled
+                && PersonalAppRoutingPolicy.UsesTunFrontend(_config)))
             {
-                outbound = Global.ProxyTag,
-                clash_mode = nameof(ERuleMode.Global)
-            });
+                _coreConfig.route.rules.Add(new()
+                {
+                    outbound = Global.DirectTag,
+                    clash_mode = nameof(ERuleMode.Direct)
+                });
+                _coreConfig.route.rules.Add(new()
+                {
+                    outbound = Global.ProxyTag,
+                    clash_mode = nameof(ERuleMode.Global)
+                });
+            }
 
             var domainStrategy = _config.RoutingBasicItem.DomainStrategy4Singbox.NullIfEmpty();
             var routing = context.RoutingItem;

@@ -35,6 +35,16 @@ public class Config
     public List<CoreTypeItem> CoreTypeItem { get; set; }
     public SimpleDNSItem SimpleDNSItem { get; set; }
     public HappyEyeballs4RayItem HappyEyeballs4RayItem { get; set; }
+    public PersonalAppRoutingItem PersonalAppRouting { get; set; } = new();
+    // Persistent master switch. Null migrates the existing TUN/proxy intent.
+    public bool? PersonalConnectionEnabled { get; set; }
 
     #endregion other entities
+}
+
+public class PersonalAppRoutingItem
+{
+    public bool Enabled { get; set; } = true;
+    public string EdgeMode { get; set; } = "rules";
+    public List<string> ProxyApps { get; set; } = [];
 }

@@ -114,14 +114,17 @@ public static class AutoStartupHandler
         task.Settings.Priority = ProcessPriorityClass.Normal;
         task.Triggers.Add(new Microsoft.Win32.TaskScheduler.LogonTrigger { UserId = logonUser });
         task.Principal.RunLevel = Microsoft.Win32.TaskScheduler.TaskRunLevel.Highest;
-        task.Actions.Add(new Microsoft.Win32.TaskScheduler.ExecAction(fileName.AppendQuotes(), null, Path.GetDirectoryName(fileName)));
+        task.Actions.Add(new Microsoft.Win32.TaskScheduler.ExecAction(fileName.AppendQuotes(), "--background", Path.GetDirectoryName(fileName)));
 
         taskService.RootFolder.RegisterTaskDefinition(taskName, task);
     }
 
+    [SupportedOSPlatform("windows")]
     private static string GetAutoRunNameWindows()
     {
-        return $"{Global.AutoRunName}_{Utils.GetMd5(Utils.StartupPath())}";
+        var identity = Path.GetFullPath(Utils.StartupPath()).TrimEnd(Path.DirectorySeparatorChar).ToUpperInvariant()
+            + "|" + WindowsIdentity.GetCurrent().User?.Value;
+        return $"{Global.AutoRunName}_{Utils.GetMd5(identity)}";
     }
 
     #endregion Windows
